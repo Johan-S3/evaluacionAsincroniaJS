@@ -5,9 +5,8 @@ import { getUsuarios, getUsuariosUserName } from "./Modulos/Usuarios/index.js";
 import { getTodo } from "./Modulos/Tareas/index.js";
 import { getAlbums } from "./Modulos/Albums/index.js";
 import { getPhotos } from "./Modulos/Photos/index.js";
-import { getPostTitulo } from "./Modulos/Posts/index.js";
+import { getPostTitulo, getPostUserId } from "./Modulos/Posts/index.js";
 import { getCommets } from "./Modulos/Comments/index.js";
-
 
 
 
@@ -83,6 +82,39 @@ const getUsersNamePhone = async () => {
 
 
 
+// Declaro variable a la cual le asigno una arrow funtion la cual retornará una promesa ya que se convierte en asincrona. El resultado de esta promesa es donde se almacena el resultado del ejercicio 5. Es decir, los usuarios con sus posts y respectivos comentarios y con sus albums y sus repectivas fotos.
+const getAllData = async () => {
+    // Declaro variable usuarios donde se almacenará los usuarios traidos de la peticion.
+    const usuarios =  await getUsuarios(URL);
+    // Se usa promise all para ejecutar multiples promesas (una por cada usuario). Luego, Recorro el arreglo de usuarios con "map", creando una promesa asíncrona para cada usuario.
+    return await Promise.all(usuarios.map(async(usuario)=>{
+        // Declaro la variable "posts" donde se almacenará el arreglo con los posts de cada usuario recibido de la petición.
+        const posts = await getPostUserId(URL,usuario);
+        // Declaro la variable "comentPost" donde se almacenará un arreglo con los posts, pero cada post tendrá también sus comentarios
+        //  dentro. Para esto, uso "Promise.all" para recorrer cada post y obtener los comentarios asociados.
+        const comentPost = await Promise.all( posts.map(async(post)=>{
+            // Declaro la variable "coments" donde se almacenará el arreglo con los comentarios del post actual recibido de la petición.
+            const coments = await getCommets(URL,post);
+            // Retorno un nuevo objeto que contiene todas las propiedades de cada post y le agrego la propiedad "coments".
+            return {...post,coments};
+        }));
+        // Declaro la variable "albums" donde se almacenará el arreglo con los albunes de cada usuario recibido de la petición.
+        const albums = await getAlbums(URL,usuario);
+        // Declaro la variable "albumPhoto" donde se almacenará un arreglo con los albunes, pero cada album tendrá también sus photos
+        //  dentro. Para esto, uso "Promise.all" para recorrer cada album y obtener las photos asociados.
+        const albumPhoto = await Promise.all( albums.map(async(album)=>{
+            // Declaro la variable "photos" donde se almacenará el arreglo con las photos del album actual recibido de la petición.
+            const photos = await getPhotos(URL,album);
+            // Retorno un nuevo objeto que contiene todas las propiedades de cada album y le agrego la propiedad "photos".
+            return {...album,photos};
+        }));
+        // Retorno un nuevo objeto que contiene los datos del usuario (...usuario), los post con sus comentarios (comentPost) y los albunes con sus fotos (albumPhoto).
+        return {...usuario,comentPost, albumPhoto};
+    }));
+};
+
+
+
 // Creo bucle "While" infinito.
 while (true) {
     // Declaro varaible "opcion" y le asigno e lvalor parseado a entero de la opcion ingresado por teclado.
@@ -149,6 +181,10 @@ while (true) {
             case 4: //Si el valor es 4 entonces muestro por consola "Ejercicio 4" y se accede al resultado del metodo getUsersNamePhone y se imprime por consola.
                 console.log("\nEjercicio 4:");
                 await getUsersNamePhone().then(data => console.log(data));
+                break;
+            case 5: //Si el valor es 5 entonces muestro por consola "Ejercicio 5" y se accede al resultado del metodo getAllData y se imprime por consola.
+                console.log("\nEjercicio 5:");
+                await getAllData().then(data => console.log(data));
                 break;
             default:
                 alert("Opcion ingresada no valida...");

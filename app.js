@@ -63,6 +63,26 @@ const getPostPorTitulo = async (titulo) => {
 
 
 
+// Declaro variable a la cual le asigno una arrow funtion la cual retornará una promesa ya que se convierte en asincrona. El resultado de esta promesa es donde se almacena el resultado del ejercicio 4. Es decir, los usuarios solo con su nombre y su telefono.
+const getUsersNamePhone = async () => {
+    try { //Uso try para recorrer el bloque de la funcion. Si en algun momento se llega a presentar un error automaticamente se manda al catch.
+      // Declaro variable usuarios donde se almacenará los usuarios traidos de la peticion.
+      const usuarios =  await getUsuarios(URL);
+      // Se usa promise all para ejecutar multiples promesas (una por cada usuario). Luego, Recorro el arreglo de usuarios con "map", creando una promesa asíncrona para cada usuario.
+      return await Promise.all(usuarios.map(async(usuario)=>{
+          // Retorno un nuevo objeto que contiene los datos del usuario (name y phone).
+        return {
+          "name": usuario.name,
+          "phone": usuario.phone
+          };
+      }));
+    } catch (error) { //En está sección se recibe el error que se generó en el catch y se muestra por consola.
+      console.error(error);
+    }
+};
+
+
+
 // Creo bucle "While" infinito.
 while (true) {
     // Declaro varaible "opcion" y le asigno e lvalor parseado a entero de la opcion ingresado por teclado.
@@ -125,6 +145,10 @@ while (true) {
                     // Si no llega ser así entonces muestra mensaje por consola que indica que el usuario no se encontró.
                     else console.log("Ningún post coincide con el titulo ingresado.");
                 });
+                break;
+            case 4: //Si el valor es 4 entonces muestro por consola "Ejercicio 4" y se accede al resultado del metodo getUsersNamePhone y se imprime por consola.
+                console.log("\nEjercicio 4:");
+                await getUsersNamePhone().then(data => console.log(data));
                 break;
             default:
                 alert("Opcion ingresada no valida...");

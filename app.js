@@ -5,6 +5,8 @@ import { getUsuarios, getUsuariosUserName } from "./Modulos/Usuarios/index.js";
 import { getTodo } from "./Modulos/Tareas/index.js";
 import { getAlbums } from "./Modulos/Albums/index.js";
 import { getPhotos } from "./Modulos/Photos/index.js";
+import { getPostTitulo } from "./Modulos/Posts/index.js";
+import { getCommets } from "./Modulos/Comments/index.js";
 
 
 
@@ -41,6 +43,21 @@ const getUserPorUserName = async (username) => {
       }));
       // Retorno un nuevo objeto que contiene los datos del usuario (...usuario) y los albums con sus fotos (albumPhoto).
       return {...usuario, albumPhoto};
+    }));
+}
+
+
+
+// Declaro variable a la cual le asigno una arrow funtion la cual retornará una promesa ya que se convierte en asincrona. El resultado de esta promesa es donde se almacena el resultado del ejercicio 3. Es decir, los posts con sus comentarios dependiendo del nombre del post ingresado.
+const getPostPorTitulo = async (titulo) => {
+    // Declaro varaible "posts" donde se almacena el resultado obtenido al llamar al metodo donde se obtienen los post por el titulo ingresado, enviando como argumentos la URL y el titulo.
+    const posts = await getPostTitulo(URL, titulo)
+    // Se usa promise all para ejecutar multiples promesas (una por cada post). Luego, Recorro el arreglo de posts con "map", creando una promesa asíncrona para cada post.
+    return await Promise.all(posts.map(async(post)=>{
+      // Declaro la variable "comments" donde se almacenará el arreglo con los comentarios del post actual recibido de la petición.
+      const comments = await getCommets(URL,post);
+      // Retorno un nuevo objeto que contiene todas las propiedades de cada post y le agrego la propiedad "comments".
+      return {...post, comments};
     }));
 }
 
@@ -89,6 +106,26 @@ while (true) {
                     else console.log("Usuario no encontrado.");
                 });
                 break; //Por ultimo se rompe la estructura.
+            case 3: //Si el valor es 3 entonces primero se ejecuta un bucle. Luego...
+                // Declaro variable titulo por fuera del bucle para poder acceder a ella tambien por fuera del bucle.
+                let titulo;
+                // Creo bucle.
+                do {
+                // Le asigno a la variable titulo el valor ingresado por teclado
+                titulo = prompt("Ingrese el titulo a buscar: ");
+                } while (!titulo); //Mientras en titulo no sea null o esté vacio se sigue ejecutando el bucle.
+                // Muestro por consola "Ejercicio 3" y se accede al resultado del metodo getPostPorTitulo enviando como argumento el titulo ingresado y se imprime por consola.
+                console.log("\nEjercicio 3:");
+                await getPostPorTitulo(titulo).then(data => {
+                    // Se valida si el valor recibido del resultado de la promesa su longitud es diferente a 0, entonces...
+                    if(data.length != 0) {
+                        // Muestro por consola el arreglo de los posts.
+                        console.log(data);
+                    }
+                    // Si no llega ser así entonces muestra mensaje por consola que indica que el usuario no se encontró.
+                    else console.log("Ningún post coincide con el titulo ingresado.");
+                });
+                break;
             default:
                 alert("Opcion ingresada no valida...");
                 break;
